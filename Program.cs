@@ -29,7 +29,14 @@ while (true)
     problem.Add(newStatement);
 }
 
-if (dfs(0)) Console.WriteLine("Solvable");
+if (dfs(0))
+{
+    Console.WriteLine("Solvable:");
+    foreach (var v in elementStates)
+    {
+        Console.WriteLine(v.Key + ": " + v.Value);
+    }
+}
 else Console.WriteLine("Not solvable");
 
 bool dfs(int index)
