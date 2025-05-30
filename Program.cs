@@ -2,6 +2,7 @@
 List<string> uniqueElements = new List<string>();
 
 Dictionary<string, bool> elementStates = new Dictionary<string, bool>();
+Dictionary<string, bool> finalElementStates = new Dictionary<string, bool>();
 
 while (true) // Take input in CNF
 {
@@ -26,7 +27,13 @@ while (true) // Take input in CNF
         newStatement.AddElement(newElement);
     }
 
-    problem.Add(newStatement);
+    if (newStatement.statement.Count() > 0) problem.Add(newStatement);
+}
+
+if (problem.Count() == 0)
+{
+    Console.WriteLine("Solvable");
+    Environment.Exit(0);
 }
 
 var watch = System.Diagnostics.Stopwatch.StartNew();
@@ -37,7 +44,7 @@ var elapsedMs = watch.ElapsedMilliseconds;
 if (result)
 {
     Console.WriteLine("Solvable:");
-    foreach (KeyValuePair<string, bool> v in elementStates)
+    foreach (KeyValuePair<string, bool> v in finalElementStates)
     {
         Console.WriteLine(v.Key + ": " + v.Value);
     }
@@ -49,15 +56,22 @@ Console.WriteLine(elapsedMs + "ms elapsed");
 
 bool dfs(int index, Dictionary<string, bool> elementStates, List<LogicalStatement> problem, SingleElement justChanged)
 {
-    if (simplify(problem, justChanged)) return true;
+    if (simplify(problem, justChanged))
+    {
+        finalElementStates = elementStates;
+        return true;
+    }
 
     int propResult = unitPropogate(elementStates, problem);
     if (propResult == 0) return false; // backtrack if conflict
-    if (propResult == 1) return true;
+    if (propResult == 1)
+    {
+        finalElementStates = elementStates;
+        return true;
+    }
 
     while (index < uniqueElements.Count() && elementStates.ContainsKey(uniqueElements[index])) index++;
 
-    //if (index == uniqueElements.Count()) return validStateCheck(problem); // not count - 1 since check should occur AFTER final state is set!
     if (index == uniqueElements.Count()) return false;
 
     elementStates[uniqueElements[index]] = true;
